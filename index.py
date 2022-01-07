@@ -44,7 +44,7 @@ def MenuPrincipal():
     print("                                                    |_|             ")
     print("1.- Perfil")
     print("2.- Ver listado de Peluqueros")
-    print("3.- Citas")                                                                             # consumir prodcuto en cita
+    print("3.- Citas")                                                                             # consumir producto en cita
     print("4.- Mensajes")
     print("5.- Valoraciones")
     print("6.- Incidencias")
@@ -93,35 +93,72 @@ def MenuAlmacen():
     print()
 
 # -------------------------------------------------------------------------------------------------
-# CREACION DE LAS CUENTAS
+# LETREROS
 # -------------------------------------------------------------------------------------------------
 
-def CreacionCuentaCliente():
+def LetreroAccesoCuenta():
+    print("\t--------------------------")
+    print("\t|   ACCESO A LA CUENTA   |")
+    print("\t--------------------------")
+    print()
+
+def LetreroCreacionCuentaCliente():
     print("\t----------------------------------")
     print("\t|   CREACIÓN DE CUENTA CLIENTE   |")
     print("\t----------------------------------")
     print()
-    print("Nombre usuario:");     nombre_usuario_cliente   = input()
-    print("Contraseña:");         password_cliente         = input()
-    print("Nombre y Apellidos:"); nombre_apellidos_cliente = input()
-    print("DNI:");                dni_cliente              = input()
-    print("Fecha Nacimiento:");   fecha_cliente            = input()
-    print("Correo electrónico:"); correo_cliente           = input()
-    os.system('clear')
 
-def CreacionCuentaPeluquero():
+def LetreroCreacionCuentaPeluquero():
     print("\t------------------------------------")
     print("\t|   CREACIÓN DE CUENTA PELUQUERO   |")
     print("\t------------------------------------")
     print()
-    print("Nombre usuario:");     nombre_usuario_peluquero   = input()
-    print("Contraseña:");         password_peluquero         = input()
-    print("Nombre y Apellidos:"); nombre_apellidos_peluquero = input()
-    print("DNI:");                dni_peluquero              = input()
-    print("Fecha Nacimiento:");   fecha_peluquero            = input()
-    print("Correo electrónico:"); correo_peluquero           = input()
-    print("CNAE:");               cnae_peluquero             = input()
-    print("Localización:");       localizacion_peluquero     = input()
+
+# -------------------------------------------------------------------------------------------------
+# CREACION DE LAS CUENTAS
+# -------------------------------------------------------------------------------------------------
+
+def CreacionCuentaUsuario(valor):
+    print("DNI:"); dni = input()
+    cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
+    res_dni = cursor.fetchall()
+    while res_dni[0][0] != 0:
+        os.system('clear')
+        print("Ya existe un usuario con ese DNI"); 
+        print()
+
+        LetreroCreacionCuentaCliente()
+        print("DNI:"); dni = input()
+        cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
+        res_dni = cursor.fetchall()
+
+    print("Nombre usuario:");       nombre_usuario = input()
+    print("Contraseña:");                 password = input()
+    print("Nombre y Apellidos:"); nombre_apellidos = input()
+    print("Fecha Nacimiento:");              fecha = input()
+    print("Correo electrónico:");           correo = input()
+
+    cursor.execute("INSERT INTO usuarios VALUES ('" + dni + "', '" + nombre_usuario + "', '" + password + "', '" + nombre_apellidos + "', TO_DATE('" + fecha + "', 'DD/MM/YYYY'), '" + correo + "', '" + str(valor) + "')")
+    
+    # agregamos dni a tabla clientes
+    if str(valor) == "0":
+        cursor.execute("INSERT INTO clientes VALUES ('" + dni + "')")
+    else:
+        print("CNAE:");                 cnae = input()
+        print("Localización:"); localizacion = input()
+        cursor.execute("INSERT INTO peluqueros VALUES ('" + dni + "', '" + cnae + "', '" + localizacion + "')")
+
+    # jjj no se si es necesario el commit
+    cursor.execute("COMMIT")
+
+def CreacionCuentaCliente():
+    LetreroCreacionCuentaCliente()
+    CreacionCuentaUsuario(0)
+    os.system('clear')
+
+def CreacionCuentaPeluquero():
+    LetreroCreacionCuentaPeluquero()
+    CreacionCuentaUsuario(1)
     os.system('clear')
 
 # -------------------------------------------------------------------------------------------------
@@ -129,12 +166,38 @@ def CreacionCuentaPeluquero():
 # -------------------------------------------------------------------------------------------------
 
 def ComprobacionLogin():
-    print("\t--------------------------")
-    print("\t|   ACCESO A LA CUENTA   |")
-    print("\t--------------------------")
+    LetreroAccesoCuenta()
+    print("DNI:"); dni = input()
+    cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
+    res_dni = cursor.fetchall()
+
+    while res_dni[0][0] == 0:
+        os.system('clear')
+        print("No existe este usuario"); 
+        print()
+
+        LetreroAccesoCuenta()
+        print("DNI:"); dni = input()
+        cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
+        res_dni = cursor.fetchall()
+
     print()
-    print("Usuario:");    usuario  = input()
     print("Contraseña:"); password = input()
+    cursor.execute("SELECT contraseña FROM usuarios WHERE dni = '" + dni + "'")
+    res_password = cursor.fetchall()
+
+    while res_password[0][0] != password:
+        os.system('clear')
+        print("La contraseña es incorrecta"); 
+        print()
+
+        LetreroAccesoCuenta()
+        print("DNI:"); print(dni)
+        print()
+        print("Contraseña:"); password = input()
+        cursor.execute("SELECT contraseña FROM usuarios WHERE dni = '" + dni + "'")
+        res_password = cursor.fetchall()
+   
     os.system('clear')
 
 # -------------------------------------------------------------------------------------------------
@@ -350,6 +413,9 @@ try:
     os.system('clear')
     print("Se ha establecido la conexión con el SGBD")  
     print()
+
+    # creamos el cursor
+    cursor = conexion.cursor()
 
     # mensajes de error
     mensaje_error_seleccion = "Valor incorrecto introducido !"
