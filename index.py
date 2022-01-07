@@ -12,7 +12,7 @@
 #
 # -------------------------------------------------------------------------------------------------
 
-import pyodbc
+import cx_Oracle
 import os                                                                                          # para limpiar la consola
 
 # -------------------------------------------------------------------------------------------------
@@ -332,24 +332,33 @@ def EjecucionMenuAlmacen():
 # MAIN
 # -------------------------------------------------------------------------------------------------
 
-try: 
-    # jjj conexión al SGBD
-    #    conexion = pyodbc.connect('                                                                   \
-    #        DRIVER={Devart ODBC Driver for Oracle};                                                   \
-    #        Direct       = True;                                                                      \
-    #        Host         = oracle0.ugr.es;                                                            \
-    #        Service Name = practbd.oracle0.ugr.es;                                                    \
-    #        User ID      = x7555876;                                                                  \
-    #        Password     = x7555876')
+try:
+    mi_host         = "oracle0.ugr.es"
+    mi_service_name = "practbd.oracle0.ugr.es"
+    mi_port         = "1521"
+    mi_dsn          = mi_host + ":" + mi_port + "/" + mi_service_name
+    mi_user         = "x7555876"
+    mi_password     = "x7555876"
+
+    # conexión al SGBD
+    conexion = cx_Oracle.connect(
+        dsn=mi_dsn,
+        user=mi_user,
+        password=mi_password
+    )
     
+    print()
+    print("Se ha establecido la conexión")  
+
     # mensajes de error
     mensaje_error_seleccion = "Valor incorrecto introducido !"
 
     os.system('clear')
     EjecucionMenuLogin()
 
-    # jjj cerrar la conexión con el SGBD
-    # CerrarConexion()
+    # cerramos la conexión con el SGBD
+    print("Cerrando la conexión...")
+    conexion.close()
 
 except Exception as err:
     print("Error: ", err)
