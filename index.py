@@ -340,25 +340,25 @@ try:
     mi_user         = "x7555876"
     mi_password     = "x7555876"
 
-    # conexión al SGBD
+    # creamos la conexión al SGBD
     conexion = cx_Oracle.connect(
         dsn=mi_dsn,
         user=mi_user,
         password=mi_password
     )
     
+    os.system('clear')
+    print("Se ha establecido la conexión con el SGBD")  
     print()
-    print("Se ha establecido la conexión")  
 
     # mensajes de error
     mensaje_error_seleccion = "Valor incorrecto introducido !"
 
-    os.system('clear')
     EjecucionMenuLogin()
 
     # cerramos la conexión con el SGBD
-    print("Cerrando la conexión...")
     conexion.close()
+    print("Conexión finalizada")
 
 except Exception as err:
     print("Error: ", err)
