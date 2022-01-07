@@ -6,4 +6,4 @@ Consiste en una app de peluquería, en la que cualquier usuario con una sesión 
 
 Tras el corte de pelo, el peluquero recibe el importe por sus servicios y el cliente procede a dejar una `valoración` del resultado obtenido.
 
-Finalmente, el peluquero contacta con un `proveedor` que le facilite los suministros agotados tras el corte previo.
+Finalmente, el peluquero contacta con un `proveedor` que le facilite los suministros agotados tras el último corte realizado.
