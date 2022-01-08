@@ -71,9 +71,10 @@ def MenuCitas():
 
 def MenuMensajes():
     print()
-    print("1.- Escribir un mensaje")
-    print("2.- Eliminar un mensaje")
-    print("3.- Volver atrás")
+    print("1.- Leer mensajes")
+    print("2.- Escribir un mensaje")
+    print("3.- Eliminar un mensaje")
+    print("4.- Volver atrás")
     print()
 
 def MenuValoraciones():
@@ -124,6 +125,12 @@ def LetreroPerfil():
     print("\t-------------------------")
     print("\t|   PERFIL DE USUARIO   |")
     print("\t-------------------------")
+    print()
+
+def LetreroMensajes():
+    print("\t----------------")
+    print("\t|   MENSAJES   |")
+    print("\t----------------")
     print()
 
 # -------------------------------------------------------------------------------------------------
@@ -212,7 +219,7 @@ def CreacionCuentaPeluquero():
     return dni
 
 # -------------------------------------------------------------------------------------------------
-# FUNCIONES DEL MENU PRINCIPAL
+# FUNCIONES DEL MENÚ PRINCIPAL
 # -------------------------------------------------------------------------------------------------
 
 def VisualizarPeluqueros():
@@ -227,7 +234,7 @@ def VisualizarPeluqueros():
     os.system('clear')
 
 # -------------------------------------------------------------------------------------------------
-# FUNCIONES DEL MENU PERFIL
+# FUNCIONES DEL MENÚ PERFIL
 # -------------------------------------------------------------------------------------------------
 
 def VisualizarPerfil(dni):
@@ -300,6 +307,64 @@ def EliminarPerfil(dni):
         cursor.execute("COMMIT")
         os.system('clear')
         print(mensaje_eliminacion_cuenta + " " + dni)
+
+# -------------------------------------------------------------------------------------------------
+# FUNCIONES DEL MENÚ MENSAJES
+# -------------------------------------------------------------------------------------------------
+
+def EscribirMensaje(dni):
+    LetreroMensajes()
+    print("DNI del destinatario : "); dni_destinatario = input(); print()
+    cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni_destinatario + "'")
+    existe_destinatario = cursor.fetchall()
+    
+    while existe_destinatario[0][0] == 0:
+        os.system('clear')
+        print(mensaje_NO_existe_usuario)
+        print()
+
+        LetreroMensajes()
+        print("DNI del destinatario : "); dni_destinatario = input(); print()
+        cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni_destinatario + "'")
+        existe_destinatario = cursor.fetchall()
+
+    print("Identificador del mensaje : "); id_men = input(); print()
+    cursor.execute("SELECT count(*) FROM mensajes WHERE id_mensaje = '" + id_men + "'")
+    existe_id_men = cursor.fetchall()
+    
+    while existe_id_men[0][0] != 0:
+        os.system('clear')
+        print(mensaje_id_men_ya_existe)
+        print()
+
+        LetreroMensajes()
+        print("DNI del destinatario : "); print(dni_destinatario); print()
+        print("Identificador del mensaje : "); id_men = input(); print()
+        cursor.execute("SELECT count(*) FROM mensajes WHERE id_mensaje = '" + id_men + "'")
+        existe_id_men = cursor.fetchall()
+
+    print("Mensaje : "); contenido_men = input(); print()
+
+    cursor.execute("INSERT INTO mensajes VALUES ('" + id_men + "', '" + dni + "', '" + dni_destinatario + "', '" + contenido_men + "')")
+    
+    # jjj no se si es necesario el commit
+    cursor.execute("COMMIT")
+    os.system('clear')
+    print(mensaje_men_enviado)
+
+def VisualizarMensajes(dni):
+    LetreroMensajes() 
+    cursor.execute("SELECT * FROM mensajes")
+    mensajes = cursor.fetchall()
+    
+    for mensaje in mensajes:
+        if mensaje[1] == dni:
+            print(dni + " : " + mensaje[3])
+        if mensaje[2] == dni:
+            print("\t\t\t\t\t" + dni + " : " + mensaje[3])
+
+    input()
+    os.system('clear')
 
 # -------------------------------------------------------------------------------------------------
 # FUNCIONES ADICIONALES 
@@ -450,13 +515,16 @@ def EjecucionMenuMensajes(dni):
     res_mensajes = input()
     os.system('clear')
 
-    while res_mensajes != "3":
+    while res_mensajes != "4":
         os.system('clear')
 
         if res_mensajes == "1":
-            print("Escribo mensaje")
+            VisualizarMensajes(dni)
 
         elif res_mensajes == "2":
+            EscribirMensaje(dni)
+
+        elif res_mensajes == "3":
             print("Elimino mensaje")
 
         else:
@@ -464,7 +532,7 @@ def EjecucionMenuMensajes(dni):
 
         MenuMensajes()
         res_mensajes = input()
-        if res_mensajes == "3":
+        if res_mensajes == "4":
             os.system('clear')
 
 def EjecucionMenuValoraciones(dni):
@@ -551,6 +619,8 @@ try:
     mensaje_es_cliente_No_elimina_cuenta = "Solo los peluqueros pueden eliminar su cuenta"
     mensaje_eliminacion_cuenta           = "Se ha eliminado la cuenta con DNI"
     mensaje_cerrar_sesion                = "Se ha cerrado la sesión"
+    mensaje_men_enviado                  = "Mensaje enviado correctamente"
+    mensaje_id_men_ya_existe             = "Este identificador ya está en uso"
     
     EjecucionMenuLogin()
 
