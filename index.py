@@ -366,6 +366,22 @@ def VisualizarMensajes(dni):
     input()
     os.system('clear')
 
+def EliminarMensaje(dni):
+    LetreroMensajes()
+    print("Introduce el identificador del mensaje a eliminar : "); id_men = input(); print()
+    cursor.execute("SELECT emisor FROM mensajes WHERE id_mensaje = '" + id_men + "'")
+    emisor = cursor.fetchall()
+
+    if emisor[0][0] == dni:
+        cursor.execute("DELETE FROM mensajes WHERE id_mensaje = '" + id_men + "'")
+        # jjj no se si es necesario el commit
+        cursor.execute("COMMIT")
+    else:
+        print(mensaje_emisor_incorrecto)
+
+    os.system('clear')
+    print(mensaje_eliminado)
+    
 # -------------------------------------------------------------------------------------------------
 # FUNCIONES ADICIONALES 
 # -------------------------------------------------------------------------------------------------
@@ -525,7 +541,7 @@ def EjecucionMenuMensajes(dni):
             EscribirMensaje(dni)
 
         elif res_mensajes == "3":
-            print("Elimino mensaje")
+            EliminarMensaje(dni)
 
         else:
             print(mensaje_error_seleccion)
@@ -621,6 +637,8 @@ try:
     mensaje_cerrar_sesion                = "Se ha cerrado la sesión"
     mensaje_men_enviado                  = "Mensaje enviado correctamente"
     mensaje_id_men_ya_existe             = "Este identificador ya está en uso"
+    mensaje_emisor_incorrecto            = "No es posible eliminar mensajes de otros usuarios"
+    mensaje_eliminado                    = "El mensaje se ha eliminado correctamente"
     
     EjecucionMenuLogin()
 
