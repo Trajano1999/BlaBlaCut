@@ -56,7 +56,7 @@ def MenuPerfil():
     print()
     print("1.- Ver Perfil")
     print("2.- Modificar Perfil")
-    print("3.- Eliminar Perfil")                                                                   # solo si es peluquero
+    print("3.- Eliminar Perfil")
     print("4.- Volver atrás")
     print()
 
@@ -122,9 +122,10 @@ def CreacionCuentaUsuario(valor):
     print("DNI:"); dni = input()
     cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
     res_dni = cursor.fetchall()
+    
     while res_dni[0][0] != 0:
         os.system('clear')
-        print("Ya existe un usuario con ese DNI"); 
+        print(mensaje_existe_usuario_DNI)
         print()
 
         LetreroCreacionCuentaCliente()
@@ -139,27 +140,33 @@ def CreacionCuentaUsuario(valor):
     print("Correo electrónico:");           correo = input()
 
     cursor.execute("INSERT INTO usuarios VALUES ('" + dni + "', '" + nombre_usuario + "', '" + password + "', '" + nombre_apellidos + "', TO_DATE('" + fecha + "', 'DD/MM/YYYY'), '" + correo + "', '" + str(valor) + "')")
-    
-    # agregamos dni a tabla clientes
-    if str(valor) == "0":
-        cursor.execute("INSERT INTO clientes VALUES ('" + dni + "')")
-    else:
-        print("CNAE:");                 cnae = input()
-        print("Localización:"); localizacion = input()
-        cursor.execute("INSERT INTO peluqueros VALUES ('" + dni + "', '" + cnae + "', '" + localizacion + "')")
 
     # jjj no se si es necesario el commit
     cursor.execute("COMMIT")
+    return dni
 
 def CreacionCuentaCliente():
     LetreroCreacionCuentaCliente()
-    CreacionCuentaUsuario(0)
+    dni = CreacionCuentaUsuario(0)
+    cursor.execute("INSERT INTO clientes VALUES ('" + dni + "')")
+    
+    # jjj no se si es necesario el commit
+    cursor.execute("COMMIT")
     os.system('clear')
+    return dni
 
 def CreacionCuentaPeluquero():
     LetreroCreacionCuentaPeluquero()
-    CreacionCuentaUsuario(1)
+    dni = CreacionCuentaUsuario(1)
+
+    print("CNAE:");                 cnae = input()
+    print("Localización:"); localizacion = input()
+    cursor.execute("INSERT INTO peluqueros VALUES ('" + dni + "', '" + cnae + "', '" + localizacion + "')")
+    
+    # jjj no se si es necesario el commit
+    cursor.execute("COMMIT")
     os.system('clear')
+    return dni
 
 # -------------------------------------------------------------------------------------------------
 # FUNCIONES ADICIONALES
@@ -173,7 +180,7 @@ def ComprobacionLogin():
 
     while res_dni[0][0] == 0:
         os.system('clear')
-        print("No existe este usuario"); 
+        print(mensaje_NO_existe_usuario) 
         print()
 
         LetreroAccesoCuenta()
@@ -188,7 +195,7 @@ def ComprobacionLogin():
 
     while res_password[0][0] != password:
         os.system('clear')
-        print("La contraseña es incorrecta"); 
+        print(mensaje_wrong_password)
         print()
 
         LetreroAccesoCuenta()
@@ -197,8 +204,24 @@ def ComprobacionLogin():
         print("Contraseña:"); password = input()
         cursor.execute("SELECT contraseña FROM usuarios WHERE dni = '" + dni + "'")
         res_password = cursor.fetchall()
-   
+    
     os.system('clear')
+    return dni
+
+def EliminarPerfil(dni):
+    cursor.execute("SELECT es_cliente FROM usuarios WHERE dni = '" + dni + "'")
+    es_cliente = cursor.fetchall()
+
+    if es_cliente[0][0] == 0:
+        print(mensaje_es_cliente_No_elimina_cuenta)
+    
+    else:
+        cursor.execute("DELETE FROM peluqueros WHERE dni = '" + dni + "'")
+        cursor.execute("DELETE FROM usuarios WHERE dni = '" + dni + "'")
+        # jjj no se si es necesario el commit
+        cursor.execute("COMMIT")
+        os.system('clear')
+        print(mensaje_eliminacion_cuenta + " " + dni)
 
 # -------------------------------------------------------------------------------------------------
 # EJECUCIÓN DE LOS MENÚS
@@ -212,16 +235,16 @@ def EjecucionMenuLogin():
         os.system('clear')
 
         if res_login == "1":
-            ComprobacionLogin()            
-            EjecucionMenuPrincipal()  
+            dni = ComprobacionLogin()            
+            EjecucionMenuPrincipal(dni)  
         
         elif res_login == "2":
-            CreacionCuentaCliente()
-            EjecucionMenuPrincipal()
+            dni = CreacionCuentaCliente()
+            EjecucionMenuPrincipal(dni)
 
         elif res_login == "3":
-            CreacionCuentaPeluquero()
-            EjecucionMenuPrincipal()
+            dni = CreacionCuentaPeluquero()
+            EjecucionMenuPrincipal(dni)
 
         else:
             print(mensaje_error_seleccion)
@@ -229,7 +252,7 @@ def EjecucionMenuLogin():
         MenuLogin()
         res_login = input()
 
-def EjecucionMenuPrincipal():
+def EjecucionMenuPrincipal(dni):
     MenuPrincipal()
     res_principal = input()
     os.system('clear')
@@ -238,25 +261,32 @@ def EjecucionMenuPrincipal():
         os.system('clear')
 
         if res_principal == "1":
-            EjecucionMenuPerfil()
+            EjecucionMenuPerfil(dni)
+            
+            # si se ha eliminado el perfil, salimos al Menu Login
+            cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
+            existe_dni = cursor.fetchall()
+
+            if existe_dni[0][0] == 0:
+                return
 
         elif res_principal == "2":
             print("Veo listado de peluqueros")
 
         elif res_principal == "3":
-            EjecucionMenuCitas()
+            EjecucionMenuCitas(dni)
 
         elif res_principal == "4":
-            EjecucionMenuMensajes()
+            EjecucionMenuMensajes(dni)
 
         elif res_principal == "5":
-            EjecucionMenuValoraciones()
+            EjecucionMenuValoraciones(dni)
 
         elif res_principal == "6":
             print("Creo incidencia")
 
         elif res_principal == "7":
-            EjecucionMenuAlmacen()
+            EjecucionMenuAlmacen(dni)
 
         else:
             print(mensaje_error_seleccion)
@@ -266,7 +296,7 @@ def EjecucionMenuPrincipal():
         if res_principal == "8":
             os.system('clear')
 
-def EjecucionMenuPerfil():
+def EjecucionMenuPerfil(dni):
     MenuPerfil()
     res_perfil = input()
     os.system('clear')
@@ -281,7 +311,8 @@ def EjecucionMenuPerfil():
             print("Modifico mi perfil")
 
         elif res_perfil == "3":
-            print("Elimino mi perfil")
+            EliminarPerfil(dni)
+            break
 
         else:
             print(mensaje_error_seleccion)
@@ -291,7 +322,7 @@ def EjecucionMenuPerfil():
         if res_perfil == "4":
             os.system('clear')
 
-def EjecucionMenuCitas():
+def EjecucionMenuCitas(dni):
     MenuCitas()
     res_citas = input()
     os.system('clear')
@@ -319,7 +350,7 @@ def EjecucionMenuCitas():
         if res_citas == "5":
             os.system('clear')
 
-def EjecucionMenuMensajes():
+def EjecucionMenuMensajes(dni):
     MenuMensajes()
     res_mensajes = input()
     os.system('clear')
@@ -341,7 +372,7 @@ def EjecucionMenuMensajes():
         if res_mensajes == "3":
             os.system('clear')
 
-def EjecucionMenuValoraciones():
+def EjecucionMenuValoraciones(dni):
     MenuValoraciones()
     res_valoraciones = input()
     os.system('clear')
@@ -366,7 +397,7 @@ def EjecucionMenuValoraciones():
         if res_valoraciones == "4":
             os.system('clear')
 
-def EjecucionMenuAlmacen():
+def EjecucionMenuAlmacen(dni):
     MenuAlmacen()
     res_almacen = input()
     os.system('clear')
@@ -418,7 +449,12 @@ try:
     cursor = conexion.cursor()
 
     # mensajes de error
-    mensaje_error_seleccion = "Valor incorrecto introducido !"
+    mensaje_error_seleccion              = "Valor incorrecto introducido !"
+    mensaje_existe_usuario_DNI           = "Ya existe un usuario con ese DNI"
+    mensaje_NO_existe_usuario            = "No existe este usuario"
+    mensaje_wrong_password               = "La contraseña es incorrecta"
+    mensaje_es_cliente_No_elimina_cuenta = "Solo los peluqueros pueden eliminar su cuenta"
+    mensaje_eliminacion_cuenta           = "Se ha eliminado la cuenta con DNI"
 
     EjecucionMenuLogin()
 
