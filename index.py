@@ -16,7 +16,7 @@ import cx_Oracle
 import os                                                                                          # para limpiar la consola
 
 # -------------------------------------------------------------------------------------------------
-# DECLARACIÓN DE LOS MENÚS
+# DECLARACIONES DE LOS MENÚS
 # -------------------------------------------------------------------------------------------------
 
 def MenuLogin():
@@ -114,62 +114,20 @@ def LetreroCreacionCuentaPeluquero():
     print("\t------------------------------------")
     print()
 
-# -------------------------------------------------------------------------------------------------
-# CREACION DE LAS CUENTAS
-# -------------------------------------------------------------------------------------------------
+def LetreroPeluqueros():
+    print("\t------------------------------")
+    print("\t|   PELUQUEROS DISPONIBLES   |")
+    print("\t------------------------------")
+    print()
 
-def CreacionCuentaUsuario(valor):
-    print("DNI:"); dni = input()
-    cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
-    res_dni = cursor.fetchall()
-    
-    while res_dni[0][0] != 0:
-        os.system('clear')
-        print(mensaje_existe_usuario_DNI)
-        print()
-
-        LetreroCreacionCuentaCliente()
-        print("DNI:"); dni = input()
-        cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
-        res_dni = cursor.fetchall()
-
-    print("Nombre usuario:");       nombre_usuario = input()
-    print("Contraseña:");                 password = input()
-    print("Nombre y Apellidos:"); nombre_apellidos = input()
-    print("Fecha Nacimiento:");              fecha = input()
-    print("Correo electrónico:");           correo = input()
-
-    cursor.execute("INSERT INTO usuarios VALUES ('" + dni + "', '" + nombre_usuario + "', '" + password + "', '" + nombre_apellidos + "', TO_DATE('" + fecha + "', 'DD/MM/YYYY'), '" + correo + "', '" + str(valor) + "')")
-
-    # jjj no se si es necesario el commit
-    cursor.execute("COMMIT")
-    return dni
-
-def CreacionCuentaCliente():
-    LetreroCreacionCuentaCliente()
-    dni = CreacionCuentaUsuario(0)
-    cursor.execute("INSERT INTO clientes VALUES ('" + dni + "')")
-    
-    # jjj no se si es necesario el commit
-    cursor.execute("COMMIT")
-    os.system('clear')
-    return dni
-
-def CreacionCuentaPeluquero():
-    LetreroCreacionCuentaPeluquero()
-    dni = CreacionCuentaUsuario(1)
-
-    print("CNAE:");                 cnae = input()
-    print("Localización:"); localizacion = input()
-    cursor.execute("INSERT INTO peluqueros VALUES ('" + dni + "', '" + cnae + "', '" + localizacion + "')")
-    
-    # jjj no se si es necesario el commit
-    cursor.execute("COMMIT")
-    os.system('clear')
-    return dni
+def LetreroPerfil():
+    print("\t-------------------------")
+    print("\t|   PERFIL DE USUARIO   |")
+    print("\t-------------------------")
+    print()
 
 # -------------------------------------------------------------------------------------------------
-# FUNCIONES ADICIONALES
+# FUNCIONES DEL MENÚ LOGIN
 # -------------------------------------------------------------------------------------------------
 
 def ComprobacionLogin():
@@ -208,6 +166,126 @@ def ComprobacionLogin():
     os.system('clear')
     return dni
 
+def CreacionCuentaUsuario(valor):
+    print("DNI:"); dni = input()
+    cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
+    res_dni = cursor.fetchall()
+    
+    while res_dni[0][0] != 0:
+        os.system('clear')
+        print(mensaje_existe_usuario_DNI)
+        print()
+
+        LetreroCreacionCuentaCliente()
+        print("DNI:"); dni = input()
+        cursor.execute("SELECT count(*) FROM usuarios WHERE dni = '" + dni + "'")
+        res_dni = cursor.fetchall()
+
+    valores = LecturaDatos()
+    cursor.execute("INSERT INTO usuarios VALUES ('" + dni + "', '" + valores[0] + "', '" + valores[1] + "', '" + valores[2] + "', TO_DATE('" + valores[3] + "', 'DD/MM/YYYY'), '" + valores[4] + "', '" + str(valor) + "')")
+
+    # jjj no se si es necesario el commit
+    cursor.execute("COMMIT")
+    return dni
+
+def CreacionCuentaCliente():
+    LetreroCreacionCuentaCliente()
+    dni = CreacionCuentaUsuario(0)
+    cursor.execute("INSERT INTO clientes VALUES ('" + dni + "')")
+    
+    # jjj no se si es necesario el commit
+    cursor.execute("COMMIT")
+    os.system('clear')
+    return dni
+
+def CreacionCuentaPeluquero():
+    LetreroCreacionCuentaPeluquero()
+    dni = CreacionCuentaUsuario(1)
+
+    print("CNAE:");                 cnae = input()
+    print("Localización:"); localizacion = input()
+    cursor.execute("INSERT INTO peluqueros VALUES ('" + dni + "', '" + cnae + "', '" + localizacion + "')")
+    
+    # jjj no se si es necesario el commit
+    cursor.execute("COMMIT")
+    os.system('clear')
+    return dni
+
+# -------------------------------------------------------------------------------------------------
+# FUNCIONES DEL MENU PRINCIPAL
+# -------------------------------------------------------------------------------------------------
+
+def VisualizarPeluqueros():
+    LetreroPeluqueros()
+    cursor.execute("SELECT dni, username FROM usuarios WHERE es_cliente = '1'")
+    lista_peluqueros = cursor.fetchall()
+
+    for peluquero in lista_peluqueros:
+        print("Peluquero : " + peluquero[1] + ", con dni : " + peluquero[0])
+
+    input()
+    os.system('clear')
+
+# -------------------------------------------------------------------------------------------------
+# FUNCIONES DEL MENU PERFIL
+# -------------------------------------------------------------------------------------------------
+
+def VisualizarPerfil(dni):
+    LetreroPerfil()
+    cursor.execute("SELECT * FROM usuarios where dni = '" + dni + "'")
+    info = cursor.fetchall()
+
+    cursor.execute("SELECT es_cliente FROM usuarios where dni = '" + dni + "'")
+    es_cliente = cursor.fetchall()
+    
+    if es_cliente[0][0] == 0:
+        tipo_usuario = "Cliente"
+    else:
+        tipo_usuario = "Peluquero"
+
+    print("DNI                : " + info[0][0])
+    print("Nombre de usuario  : " + info[0][1])
+    print("Contraseña         : " + info[0][2])
+    print("Nombre y Apellidos : " + info[0][3])
+    print("Fecha Nacimiento   : " + str(info[0][4]))
+    print("Correo electrónico : " + info[0][5])
+    print("Tipo de usuario    : " + tipo_usuario)
+    
+    if es_cliente[0][0] == 1:
+        cursor.execute("SELECT * FROM peluqueros where dni = '" + dni + "'")
+        info_pelu = cursor.fetchall()
+        print("CNAE               : " + info_pelu[0][1])
+        print("Localización       : " + info_pelu[0][2])
+
+    input()
+    os.system('clear')
+
+def ModificarPerfil(dni):
+    LetreroPerfil()
+    cursor.execute("SELECT es_cliente FROM usuarios where dni = '" + dni + "'")
+    es_cliente = cursor.fetchall()
+    valores = LecturaDatos()
+
+    if es_cliente[0][0] == 0:
+        cursor.execute("DELETE FROM clientes WHERE dni = '" + dni + "'")
+        cursor.execute("DELETE FROM usuarios WHERE dni = '" + dni + "'")
+    else:
+        cursor.execute("DELETE FROM peluqueros WHERE dni = '" + dni + "'")
+        cursor.execute("DELETE FROM usuarios WHERE dni = '" + dni + "'")
+
+    cursor.execute("INSERT INTO usuarios VALUES ('" + dni + "', '" + valores[0] + "', '" + valores[1] + "', '" + valores[2] + "', TO_DATE('" + valores[3] + "', 'DD/MM/YYYY'), '" + valores[4] + "', '" + str(es_cliente[0][0]) + "')")
+
+    if es_cliente[0][0] == 0:    
+        cursor.execute("INSERT INTO clientes VALUES ('" + dni + "')")
+    else:
+        print("CNAE:");                 cnae = input()
+        print("Localización:"); localizacion = input()
+        cursor.execute("INSERT INTO peluqueros VALUES ('" + dni + "', '" + cnae + "', '" + localizacion + "')")
+
+    # jjj no se si es necesario el commit
+    cursor.execute("COMMIT")
+    os.system('clear')
+
 def EliminarPerfil(dni):
     cursor.execute("SELECT es_cliente FROM usuarios WHERE dni = '" + dni + "'")
     es_cliente = cursor.fetchall()
@@ -222,6 +300,20 @@ def EliminarPerfil(dni):
         cursor.execute("COMMIT")
         os.system('clear')
         print(mensaje_eliminacion_cuenta + " " + dni)
+
+# -------------------------------------------------------------------------------------------------
+# FUNCIONES ADICIONALES 
+# -------------------------------------------------------------------------------------------------
+
+def LecturaDatos():
+    print("Nombre usuario:");       nombre_usuario = input()
+    print("Contraseña:");                 password = input()
+    print("Nombre y Apellidos:"); nombre_apellidos = input()
+    print("Fecha Nacimiento:");              fecha = input()
+    print("Correo electrónico:");           correo = input()
+
+    resultado = [nombre_usuario, password, nombre_apellidos, fecha, correo]
+    return resultado
 
 # -------------------------------------------------------------------------------------------------
 # EJECUCIÓN DE LOS MENÚS
@@ -271,7 +363,7 @@ def EjecucionMenuPrincipal(dni):
                 return
 
         elif res_principal == "2":
-            print("Veo listado de peluqueros")
+            VisualizarPeluqueros()
 
         elif res_principal == "3":
             EjecucionMenuCitas(dni)
@@ -295,6 +387,9 @@ def EjecucionMenuPrincipal(dni):
         res_principal = input()
         if res_principal == "8":
             os.system('clear')
+    
+    if res_principal == "8":
+        print(mensaje_cerrar_sesion)
 
 def EjecucionMenuPerfil(dni):
     MenuPerfil()
@@ -305,10 +400,10 @@ def EjecucionMenuPerfil(dni):
         os.system('clear')
 
         if res_perfil == "1":
-            print("Veo mi perfil")
+            VisualizarPerfil(dni)
 
         elif res_perfil == "2":
-            print("Modifico mi perfil")
+            ModificarPerfil(dni)
 
         elif res_perfil == "3":
             EliminarPerfil(dni)
@@ -455,7 +550,8 @@ try:
     mensaje_wrong_password               = "La contraseña es incorrecta"
     mensaje_es_cliente_No_elimina_cuenta = "Solo los peluqueros pueden eliminar su cuenta"
     mensaje_eliminacion_cuenta           = "Se ha eliminado la cuenta con DNI"
-
+    mensaje_cerrar_sesion                = "Se ha cerrado la sesión"
+    
     EjecucionMenuLogin()
 
     # cerramos la conexión con el SGBD
