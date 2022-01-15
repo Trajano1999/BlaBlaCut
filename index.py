@@ -312,10 +312,9 @@ def VisualizarPeluqueros():
 
 def ModificarPerfil(dni, tipo_cuenta):
     LetreroPerfil()
-
     valores = LecturaDatos()
 
-    # jjj cursor.execute("UPDATE usuarios SET username = '" + valores[0] + "' where dni = '77555878Z'")
+    cursor.execute("UPDATE usuarios SET username = '" + valores[0] + "', contraseña = '" + valores[1] + "', nombre = '" + valores[2] + "', fecha_nacimiento = TO_DATE('" + valores[3] + "', 'DD/MM/YYYY'), correo = '" + valores[4] + "'  WHERE dni = '" + dni + "'")
 
     if tipo_cuenta == 1:
         print("CNAE:");                 cnae = input(); print()
@@ -622,7 +621,7 @@ def EjecucionMenuAlmacen(dni, tipo_cuenta):
 # -------------------------------------------------------------------------------------------------
 
 try:
-    # definimos los mensajes de error
+    # mensajes de error
     mensaje_error_seleccion    = "Valor incorrecto introducido !"
     mensaje_wrong_password     = "La contraseña es incorrecta"
     
@@ -639,7 +638,7 @@ try:
     mensaje_id_men_ya_existe   = "Este identificador ya está en uso"
     mensaje_emisor_incorrecto  = "No es posible eliminar mensajes de otros usuarios"
 
-    # pedimos los datos para la conexion al SGBD
+    # petición de los datos para la conexion al SGBD
     os.system('clear')
     LetreroConexionBaseDatos()
 
@@ -666,7 +665,7 @@ try:
     mi_sid = mi_sid_inicial + "." + mi_host
     mi_dsn = mi_host + ":" + mi_port + "/" + mi_sid
 
-    # creamos la conexión al SGBD
+    # creación de la conexión al SGBD
     conexion = cx_Oracle.connect(
         dsn=mi_dsn,
         user=mi_user,
@@ -677,12 +676,12 @@ try:
     print("Se ha establecido la conexión con el SGBD")  
     print()
 
-    # creamos el cursor
+    # creación del cursor
     cursor = conexion.cursor()
     
     EjecucionMenuLogin()
 
-    # cerramos la conexión con el SGBD
+    # cierre de la conexión con el SGBD
     conexion.close()
     print("Conexión finalizada")
 
