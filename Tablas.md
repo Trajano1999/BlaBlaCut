@@ -135,7 +135,8 @@ create table productos(
     id_producto varchar(20) PRIMARY KEY, 
     precio decimal(4,2), 
     tipo varchar(25) NOT NULL, 
-    descripcion varchar(100)
+    descripcion varchar(100),
+    cantidad varhcar(4)
 );
 ~~~
 
